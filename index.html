@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tra Cứu & Báo Giá Ống Nhựa HDPE (PE80 & PE100)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (XLSX Reader) CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            800: '#0c4a6e',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gradient-to-r from-slate-900 via-brand-800 to-brand-700 text-white shadow-xl relative overflow-hidden border-b border-white/10">
+        <!-- Subtle decorative background element -->
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3.5 sm:py-5 relative z-10 flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-5">
+            <!-- Brand & Title Block -->
+            <div class="flex items-center space-x-3 sm:space-x-4 w-full md:w-auto">
+                <div class="p-2.5 sm:p-3 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl sm:rounded-2xl shadow-lg shadow-amber-500/20 text-slate-950 font-black flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-pipes text-xl sm:text-2xl"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center space-x-2 sm:space-x-3 flex-wrap">
+                        <span class="text-xl sm:text-2xl font-black tracking-wider text-amber-400 font-mono drop-shadow-md">BADAPLAST</span>
+                        <span class="px-2 py-0.5 text-[10px] sm:text-[11px] font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full tracking-wider">
+                            <i class="fa-solid fa-shield-check mr-1"></i>ISO 4427:2007
+                        </span>
+                    </div>
+                    <h1 class="text-sm sm:text-xl font-bold text-white tracking-tight mt-0.5 truncate sm:whitespace-normal">HỆ THỐNG TRA CỨU & BÁO GIÁ ỐNG NHỰA HDPE</h1>
+                    <p class="text-[11px] sm:text-xs text-blue-200/80 font-medium mt-0.5 hidden sm:block">Bảng giá chuẩn cho vật liệu PE80 & PE100 (Đường kính DN20 - DN630)</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs (Mobile Scrollable) -->
+            <nav class="flex w-full md:w-auto overflow-x-auto no-scrollbar bg-slate-950/40 backdrop-blur-md p-1 rounded-xl sm:rounded-2xl border border-white/15 text-xs sm:text-sm font-medium gap-1 shadow-inner">
+                <button id="tab-lookup-btn" onclick="switchTab('lookup')" class="flex-1 md:flex-none whitespace-nowrap flex items-center justify-center space-x-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl transition-all duration-200 bg-white text-brand-800 font-bold shadow-md">
+                    <i class="fa-solid fa-calculator text-brand-600"></i>
+                    <span>Tra Cứu & Tính Giá</span>
+                </button>
+                <button id="tab-summary-btn" onclick="switchTab('summary')" class="flex-1 md:flex-none whitespace-nowrap flex items-center justify-center space-x-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl transition-all duration-200 text-blue-100 hover:text-white hover:bg-white/10">
+                    <i class="fa-solid fa-table-list"></i>
+                    <span>Bảng Giá Tổng Hợp</span>
+                </button>
+                <button id="tab-manage-btn" onclick="switchTab('manage')" class="flex-1 md:flex-none whitespace-nowrap flex items-center justify-center space-x-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg sm:rounded-xl transition-all duration-200 text-blue-100 hover:text-white hover:bg-white/10">
+                    <i class="fa-solid fa-lock text-amber-400"></i>
+                    <span>Cập Nhật Bảng Giá</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+
+        <!-- ALERT NOTIFICATION CONTAINER -->
+        <div id="alert-container" class="mb-4 hidden"></div>
+
+        <!-- ================= TAB 1: TRA CỨU & BÁO GIÁ & TÍNH THÀNH TIỀN ================= -->
+        <div id="tab-lookup" class="space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+                
+                <!-- Left Column: Search Form -->
+                <div class="lg:col-span-5 bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center space-x-2 pb-3 sm:pb-4 mb-3 sm:mb-4 border-b border-slate-100">
+                        <i class="fa-solid fa-filter text-brand-600 text-base sm:text-lg"></i>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Thông Số Tra Cứu Sản Phẩm</h2>
+                    </div>
+
+                    <form id="lookup-form" onsubmit="handleLookup(event)" class="space-y-3 sm:space-y-4">
+                        <!-- 1. Loại PE -->
+                        <div>
+                            <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Loại vật liệu (PE)</label>
+                            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+                                <label class="flex items-center justify-center p-2.5 sm:p-3 border rounded-xl cursor-pointer transition-all border-slate-200 hover:border-brand-500 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700 font-medium text-xs sm:text-sm">
+                                    <input type="radio" name="pe_type" value="PE100" checked class="hidden" onchange="filterAvailableDN()">
+                                    <i class="fa-solid fa-layer-group mr-1.5 text-brand-500"></i> PE 100
+                                </label>
+                                <label class="flex items-center justify-center p-2.5 sm:p-3 border rounded-xl cursor-pointer transition-all border-slate-200 hover:border-brand-500 has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-700 font-medium text-xs sm:text-sm">
+                                    <input type="radio" name="pe_type" value="PE80" class="hidden" onchange="filterAvailableDN()">
+                                    <i class="fa-solid fa-layer-group mr-1.5 text-brand-500"></i> PE 80
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 2. Đường kính DN -->
+                        <div>
+                            <label for="dn_select" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Đường kính ngoài danh định (DN - mm)</label>
+                            <select id="dn_select" onchange="filterAvailablePN()" class="w-full p-2.5 sm:p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-xs sm:text-sm font-medium transition-all">
+                                <!-- Dynamic Options -->
+                            </select>
+                        </div>
+
+                        <!-- 3. Áp lực PN -->
+                        <div>
+                            <label for="pn_select" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Cấp áp lực (PN - bar)</label>
+                            <select id="pn_select" onchange="triggerLookupCalculation()" class="w-full p-2.5 sm:p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-xs sm:text-sm font-medium transition-all">
+                                <!-- Dynamic PN Options -->
+                            </select>
+                        </div>
+
+                        <!-- 4. % Chiết khấu -->
+                        <div>
+                            <label for="discount" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Chiết khấu thương mại (%)</label>
+                            <div class="relative">
+                                <input type="number" id="discount" value="38" min="0" max="100" step="0.5" oninput="triggerLookupCalculation()" class="w-full p-2.5 sm:p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-xs sm:text-sm font-medium pr-10 transition-all">
+                                <span class="absolute right-3 top-2.5 sm:top-3 text-xs sm:text-sm text-slate-400 font-bold">%</span>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="w-full py-3 sm:py-3.5 px-4 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-magnifying-glass-dollar"></i>
+                            <span>Cập Nhật Đơn Giá Tra Cứu</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right Column: Results Only -->
+                <div class="lg:col-span-7 space-y-4 sm:space-y-6">
+                    
+                    <!-- Result Card -->
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex flex-wrap justify-between items-center pb-3 sm:pb-4 border-b border-slate-100 gap-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="p-1.5 sm:p-2 bg-brand-100 text-brand-700 rounded-lg text-xs sm:text-base"><i class="fa-solid fa-tag"></i></span>
+                                <h3 class="text-base sm:text-lg font-bold text-slate-800">Kết Quả Đơn Giá Sản Phẩm</h3>
+                            </div>
+                            <span id="selected-spec-badge" class="px-2.5 py-1 bg-brand-50 text-brand-700 font-semibold text-[11px] sm:text-xs rounded-full border border-brand-200">
+                                PE100 - DN63 - PN10
+                            </span>
+                        </div>
+
+                        <!-- Price Results Display -->
+                        <div id="price-results-container" class="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                            <!-- Dynamic Content -->
+                        </div>
+
+                        <!-- Add to List Button -->
+                        <div class="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 flex justify-end">
+                            <button id="add-to-cart-btn" onclick="addCurrentItemToTable()" class="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow transition-all flex items-center justify-center space-x-2 text-xs sm:text-sm">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Thêm Quy Cách Này Vào Bảng Tính</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bảng Tính Thành Tiền Danh Sách Vật Tư -->
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 gap-1">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-calculator text-brand-600 text-base sm:text-lg"></i>
+                                <h3 class="text-base sm:text-lg font-bold text-slate-800">Bảng Báo Giá</h3>
+                            </div>
+                            <span class="text-[11px] sm:text-xs text-slate-500 font-medium">(Đơn giá áp dụng: Sau chiết khấu trước thuế)</span>
+                        </div>
+
+                        <!-- Mobile Card List View (Visible on small screens) -->
+                        <div id="calculation-mobile-cards" class="block md:hidden space-y-3 mt-4">
+                            <!-- Dynamic mobile cards -->
+                        </div>
+
+                        <!-- Desktop Table View (Visible on medium+ screens) -->
+                        <div class="hidden md:block overflow-x-auto mt-4">
+                            <table class="w-full text-sm text-left text-slate-600">
+                                <thead class="text-xs text-slate-700 uppercase bg-slate-100 rounded-lg">
+                                    <tr>
+                                        <th class="px-3 py-3 rounded-l-lg">STT</th>
+                                        <th class="px-3 py-3">TÊN QUY CÁCH ỐNG</th>
+                                        <th class="px-3 py-3 text-right">ĐƠN GIÁ NIÊM YẾT (Đ/M)</th>
+                                        <th class="px-3 py-3 text-center">TỶ LỆ CK (%)</th>
+                                        <th class="px-3 py-3 text-right">ĐƠN GIÁ CK (Đ/M)</th>
+                                        <th class="px-3 py-3 text-center w-24">SỐ LƯỢNG (M)</th>
+                                        <th class="px-3 py-3 text-right">THÀNH TIỀN (Đ)</th>
+                                        <th class="px-3 py-3 text-center rounded-r-lg w-12">XÓA</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="calculation-tbody" class="divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Totals -->
+                        <div class="mt-4 sm:mt-6 pt-4 border-t border-slate-200 bg-slate-50 p-3.5 sm:p-4 rounded-xl space-y-2">
+                            <div class="flex justify-between text-xs sm:text-sm text-slate-600">
+                                <span>Tổng tiền hàng trước thuế:</span>
+                                <span id="total-before-tax" class="font-bold text-slate-800">0 đ</span>
+                            </div>
+                            <div class="flex justify-between text-xs sm:text-sm text-slate-600">
+                                <span>Thuế GTGT (VAT 8%):</span>
+                                <span id="total-vat" class="font-bold text-slate-800">0 đ</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs sm:text-base font-extrabold text-brand-800 pt-2 border-t border-slate-200">
+                                <span>TỔNG CỘNG THANH TOÁN:</span>
+                                <span id="grand-total" class="text-emerald-600 text-sm sm:text-lg">0 đ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: BẢNG TỔNG HỢP GIÁ 2 LOẠI ỐNG ================= -->
+        <div id="tab-summary" class="space-y-4 sm:space-y-6 hidden">
+            <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3 sm:space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base sm:text-lg font-bold text-slate-800">Bảng Tổng Hợp Giá 2 Loại Ống (PE80 & PE100)</h2>
+                        <p class="text-[11px] sm:text-xs text-slate-500">Bảng tra cứu đầy đủ độ dày và đơn giá các cấp đường kính từ DN20 đến DN630</p>
+                    </div>
+
+                    <!-- Quick Filters -->
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm w-full sm:w-auto">
+                            <span class="font-medium text-slate-600 shrink-0">Loại PE:</span>
+                            <select id="summary-pe-filter" onchange="renderSummaryTable()" class="w-full sm:w-auto p-2 border border-slate-300 rounded-xl bg-slate-50 font-medium text-slate-800 text-xs sm:text-sm focus:ring-2 focus:ring-brand-500">
+                                <option value="ALL">Tất cả (PE80 & PE100)</option>
+                                <option value="PE100">Chỉ hiện PE 100</option>
+                                <option value="PE80">Chỉ hiện PE 80</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center space-x-1.5 sm:space-x-2 text-xs sm:text-sm w-full sm:w-auto">
+                            <span class="font-medium text-slate-600 shrink-0">Cấp PN:</span>
+                            <select id="summary-pn-filter" onchange="renderSummaryTable()" class="w-full sm:w-auto p-2 border border-slate-300 rounded-xl bg-slate-50 font-medium text-slate-800 text-xs sm:text-sm focus:ring-2 focus:ring-brand-500">
+                                <option value="ALL">Tất cả các PN</option>
+                                <option value="PN6">PN 6</option>
+                                <option value="PN8">PN 8</option>
+                                <option value="PN10">PN 10</option>
+                                <option value="PN12.5">PN 12.5</option>
+                                <option value="PN16">PN 16</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Table Container (Scrollable on Mobile) -->
+                <div class="overflow-x-auto max-h-[550px] sm:max-h-[650px] rounded-xl border border-slate-200">
+                    <table class="w-full text-xs sm:text-sm text-left text-slate-600 whitespace-nowrap">
+                        <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 z-10 shadow-sm">
+                            <tr>
+                                <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 border-b border-slate-200">Loại PE</th>
+                                <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 border-b border-slate-200">Đường kính DN</th>
+                                <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 border-b border-slate-200">Áp lực PN</th>
+                                <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 border-b border-slate-200 text-center">Độ dày</th>
+                                <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 border-b border-slate-200 text-right">Giá trước thuế</th>
+                                <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 border-b border-slate-200 text-right">Giá VAT 8%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-tbody" class="divide-y divide-slate-100 bg-white">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: CẬP NHẬT & QUẢN LÝ DỮ LIỆU (BẢO MẬT) ================= -->
+        <div id="tab-manage" class="space-y-4 sm:space-y-6 hidden">
+            
+            <!-- Password Protection Screen -->
+            <div id="auth-screen" class="max-w-md mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-md border border-slate-200 text-center space-y-4">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl sm:text-2xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-800">Yêu Cầu Mật Khẩu Quản Trị</h2>
+                    <p class="text-xs text-slate-500 mt-1">Vui lòng nhập mật khẩu để tiếp tục cập nhật và chỉnh sửa bảng giá</p>
+                </div>
+                <form onsubmit="handleAuthSubmit(event)" class="space-y-3 sm:space-y-4 pt-2">
+                    <input type="password" id="auth-password" placeholder="Nhập mật khẩu..." class="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 text-center text-base sm:text-lg font-bold tracking-wider">
+                    <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs sm:text-sm rounded-xl shadow transition-all">
+                        Xác Nhận Đăng Nhập
+                    </button>
+                </form>
+            </div>
+
+            <!-- Protected Content (Hidden by default until login) -->
+            <div id="protected-manage-content" class="space-y-4 sm:space-y-6 hidden">
+                <!-- Header actions for Data Management -->
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-100">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h2 class="text-base sm:text-lg font-bold text-slate-800">Quản Lý & Cập Nhật Bảng Giá Dữ Liệu</h2>
+                                <span class="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] sm:text-xs font-bold rounded-full border border-emerald-200">
+                                    <i class="fa-solid fa-shield-halved mr-1"></i>Đã Đăng Nhập
+                                </span>
+                            </div>
+                            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Tải tệp Excel lên hoặc trực tiếp chỉnh sửa bảng giá trong trình duyệt</p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            <label class="cursor-pointer flex-1 sm:flex-none justify-center px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs sm:text-sm transition-all shadow-sm flex items-center space-x-1.5">
+                                <i class="fa-solid fa-file-excel"></i>
+                                <span>Upload Excel (.xlsx)</span>
+                                <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+                            </label>
+                            <button onclick="resetToDefaultData()" class="px-3 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs sm:text-sm transition-all shadow-sm flex items-center space-x-1.5">
+                                <i class="fa-solid fa-rotate-left"></i>
+                                <span>Khôi phục giá</span>
+                            </button>
+                            <button onclick="lockSession()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-sm flex items-center space-x-1" title="Khóa phiên làm việc">
+                                <i class="fa-solid fa-right-from-bracket"></i>
+                                <span class="hidden sm:inline">Khóa</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Data Table -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+                        <div class="flex items-center space-x-2 w-full sm:w-auto">
+                            <span class="font-medium text-slate-600 shrink-0">Chọn bảng giá:</span>
+                            <select id="manage-pe-filter" onchange="renderManagementTable()" class="p-2 border border-slate-300 rounded-lg bg-slate-50 font-medium text-slate-800 text-xs sm:text-sm w-full sm:w-auto">
+                                <option value="PE100">Ống PE 100</option>
+                                <option value="PE80">Ống PE 80</option>
+                            </select>
+                        </div>
+                        <div class="text-[11px] sm:text-xs text-slate-500">
+                            <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>
+                            Chỉnh sửa trực tiếp tại các ô độ dày hoặc đơn giá bên dưới.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editable Data Table Container (Scrollable) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto max-h-[500px] sm:max-h-[600px]">
+                        <table class="w-full text-xs sm:text-sm text-left text-slate-600 whitespace-nowrap">
+                            <thead class="text-[11px] sm:text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 z-10">
+                                <tr>
+                                    <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100">DN (mm)</th>
+                                    <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100">Cấp PN</th>
+                                    <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100">Độ dày (mm)</th>
+                                    <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100">Đơn giá gốc trước thuế (VNĐ/m)</th>
+                                    <th class="px-3 py-2.5 sm:px-4 sm:py-3 bg-slate-100 text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="management-tbody" class="divide-y divide-slate-100">
+                                <!-- Dynamic rendering -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3 sm:py-4 text-center text-[11px] sm:text-xs text-slate-500 mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            Ứng dụng Tra Cứu & Báo Giá Ống Nhựa HDPE PE80 / PE100 &bull; Tiêu chuẩn ISO 4427:2007
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ADMIN PASSWORD
+        const ADMIN_PASSWORD = "Vu@20021985";
+        let isAuthenticated = false;
+
+        // FULL EXTRACTED DATABASE FROM DATA.XLS
+        const DEFAULT_PRICE_DATA = {
+            PE100: [
+                { dn: 20, pn: 'PN10', thickness: 1.8, price: 6100 },
+                { dn: 20, pn: 'PN12.5', thickness: 1.9, price: 6500 },
+                { dn: 20, pn: 'PN16', thickness: 2.0, price: 7200 },
+                { dn: 25, pn: 'PN8', thickness: 1.8, price: 7800 },
+                { dn: 25, pn: 'PN10', thickness: 2.0, price: 8600 },
+                { dn: 25, pn: 'PN12.5', thickness: 2.3, price: 9800 },
+                { dn: 25, pn: 'PN16', thickness: 2.3, price: 10200 },
+                { dn: 32, pn: 'PN6', thickness: 1.8, price: 10500 },
+                { dn: 32, pn: 'PN8', thickness: 2.0, price: 11800 },
+                { dn: 32, pn: 'PN10', thickness: 2.4, price: 13900 },
+                { dn: 32, pn: 'PN12.5', thickness: 2.9, price: 16500 },
+                { dn: 32, pn: 'PN16', thickness: 3.0, price: 17200 },
+                { dn: 40, pn: 'PN6', thickness: 1.8, price: 13200 },
+                { dn: 40, pn: 'PN8', thickness: 2.3, price: 16700 },
+                { dn: 40, pn: 'PN10', thickness: 3.0, price: 21200 },
+                { dn: 40, pn: 'PN12.5', thickness: 3.7, price: 25600 },
+                { dn: 40, pn: 'PN16', thickness: 3.7, price: 26100 },
+                { dn: 50, pn: 'PN6', thickness: 2.0, price: 18400 },
+                { dn: 50, pn: 'PN8', thickness: 2.9, price: 25900 },
+                { dn: 50, pn: 'PN10', thickness: 3.7, price: 32800 },
+                { dn: 50, pn: 'PN12.5', thickness: 4.6, price: 40100 },
+                { dn: 50, pn: 'PN16', thickness: 4.6, price: 40500 },
+                { dn: 63, pn: 'PN6', thickness: 2.5, price: 28900 },
+                { dn: 63, pn: 'PN8', thickness: 3.6, price: 40600 },
+                { dn: 63, pn: 'PN10', thickness: 4.7, price: 51800 },
+                { dn: 63, pn: 'PN12.5', thickness: 5.8, price: 63500 },
+                { dn: 63, pn: 'PN16', thickness: 5.8, price: 64100 },
+                { dn: 75, pn: 'PN6', thickness: 2.9, price: 39800 },
+                { dn: 75, pn: 'PN8', thickness: 4.3, price: 57400 },
+                { dn: 75, pn: 'PN10', thickness: 5.6, price: 73200 },
+                { dn: 75, pn: 'PN12.5', thickness: 6.8, price: 88900 },
+                { dn: 75, pn: 'PN16', thickness: 6.8, price: 89500 },
+                { dn: 90, pn: 'PN6', thickness: 3.5, price: 57200 },
+                { dn: 90, pn: 'PN8', thickness: 5.1, price: 82100 },
+                { dn: 90, pn: 'PN10', thickness: 6.7, price: 105400 },
+                { dn: 90, pn: 'PN12.5', thickness: 8.2, price: 128200 },
+                { dn: 90, pn: 'PN16', thickness: 8.2, price: 129000 },
+                { dn: 110, pn: 'PN6', thickness: 4.2, price: 84200 },
+                { dn: 110, pn: 'PN8', thickness: 6.3, price: 123800 },
+                { dn: 110, pn: 'PN10', thickness: 8.1, price: 156300 },
+                { dn: 110, pn: 'PN12.5', thickness: 10.0, price: 190400 },
+                { dn: 110, pn: 'PN16', thickness: 10.0, price: 191500 },
+                { dn: 125, pn: 'PN6', thickness: 4.8, price: 108900 },
+                { dn: 125, pn: 'PN8', thickness: 7.1, price: 158200 },
+                { dn: 125, pn: 'PN10', thickness: 9.2, price: 202100 },
+                { dn: 125, pn: 'PN12.5', thickness: 11.4, price: 247100 },
+                { dn: 125, pn: 'PN16', thickness: 11.4, price: 248500 },
+                { dn: 140, pn: 'PN6', thickness: 5.4, price: 137300 },
+                { dn: 140, pn: 'PN8', thickness: 8.0, price: 198900 },
+                { dn: 140, pn: 'PN10', thickness: 10.3, price: 253200 },
+                { dn: 140, pn: 'PN12.5', thickness: 12.7, price: 309300 },
+                { dn: 140, pn: 'PN16', thickness: 12.7, price: 311000 },
+                { dn: 160, pn: 'PN6', thickness: 6.2, price: 179800 },
+                { dn: 160, pn: 'PN8', thickness: 9.1, price: 259200 },
+                { dn: 160, pn: 'PN10', thickness: 11.8, price: 331500 },
+                { dn: 160, pn: 'PN12.5', thickness: 14.6, price: 405800 },
+                { dn: 160, pn: 'PN16', thickness: 14.6, price: 408000 },
+                { dn: 180, pn: 'PN6', thickness: 6.9, price: 226200 },
+                { dn: 180, pn: 'PN8', thickness: 10.2, price: 327400 },
+                { dn: 180, pn: 'PN10', thickness: 13.3, price: 420800 },
+                { dn: 180, pn: 'PN12.5', thickness: 16.4, price: 512900 },
+                { dn: 180, pn: 'PN16', thickness: 16.4, price: 516000 },
+                { dn: 200, pn: 'PN6', thickness: 7.7, price: 279500 },
+                { dn: 200, pn: 'PN8', thickness: 11.4, price: 405600 },
+                { dn: 200, pn: 'PN10', thickness: 14.7, price: 518300 },
+                { dn: 200, pn: 'PN12.5', thickness: 18.2, price: 633100 },
+                { dn: 200, pn: 'PN16', thickness: 18.2, price: 637000 },
+                { dn: 225, pn: 'PN6', thickness: 8.6, price: 352100 },
+                { dn: 225, pn: 'PN8', thickness: 12.8, price: 511800 },
+                { dn: 225, pn: 'PN10', thickness: 16.6, price: 657100 },
+                { dn: 225, pn: 'PN12.5', thickness: 20.5, price: 801600 },
+                { dn: 225, pn: 'PN16', thickness: 20.5, price: 807000 },
+                { dn: 250, pn: 'PN6', thickness: 9.6, price: 435200 },
+                { dn: 250, pn: 'PN8', thickness: 14.2, price: 632100 },
+                { dn: 250, pn: 'PN10', thickness: 18.4, price: 810900 },
+                { dn: 250, pn: 'PN12.5', thickness: 22.7, price: 987800 },
+                { dn: 250, pn: 'PN16', thickness: 22.7, price: 995000 },
+                { dn: 280, pn: 'PN6', thickness: 10.7, price: 544800 },
+                { dn: 280, pn: 'PN8', thickness: 15.9, price: 792400 },
+                { dn: 280, pn: 'PN10', thickness: 20.6, price: 1017400 },
+                { dn: 280, pn: 'PN12.5', thickness: 25.4, price: 1238900 },
+                { dn: 280, pn: 'PN16', thickness: 25.4, price: 1248000 },
+                { dn: 315, pn: 'PN6', thickness: 12.1, price: 692100 },
+                { dn: 315, pn: 'PN8', thickness: 17.9, price: 1004800 },
+                { dn: 315, pn: 'PN10', thickness: 23.2, price: 1289100 },
+                { dn: 315, pn: 'PN12.5', thickness: 28.6, price: 1569400 },
+                { dn: 315, pn: 'PN16', thickness: 28.6, price: 1580000 },
+                { dn: 355, pn: 'PN6', thickness: 13.6, price: 878400 },
+                { dn: 355, pn: 'PN8', thickness: 20.1, price: 1273900 },
+                { dn: 355, pn: 'PN10', thickness: 26.1, price: 1634800 },
+                { dn: 355, pn: 'PN12.5', thickness: 32.2, price: 1991200 },
+                { dn: 355, pn: 'PN16', thickness: 32.2, price: 2005000 },
+                { dn: 400, pn: 'PN6', thickness: 15.3, price: 1115200 },
+                { dn: 400, pn: 'PN8', thickness: 22.7, price: 1621500 },
+                { dn: 400, pn: 'PN10', thickness: 29.4, price: 2078600 },
+                { dn: 400, pn: 'PN12.5', thickness: 36.3, price: 2531800 },
+                { dn: 400, pn: 'PN16', thickness: 36.3, price: 2549000 },
+                { dn: 450, pn: 'PN6', thickness: 17.2, price: 1410800 },
+                { dn: 450, pn: 'PN8', thickness: 25.5, price: 2051200 },
+                { dn: 450, pn: 'PN10', thickness: 33.1, price: 2631000 },
+                { dn: 450, pn: 'PN12.5', thickness: 40.9, price: 3208500 },
+                { dn: 450, pn: 'PN16', thickness: 40.9, price: 3230000 },
+                { dn: 500, pn: 'PN6', thickness: 19.1, price: 1739200 },
+                { dn: 500, pn: 'PN8', thickness: 28.3, price: 2532100 },
+                { dn: 500, pn: 'PN10', thickness: 36.8, price: 3248200 },
+                { dn: 500, pn: 'PN12.5', thickness: 45.4, price: 3958900 },
+                { dn: 500, pn: 'PN16', thickness: 45.4, price: 3985000 },
+                { dn: 560, pn: 'PN6', thickness: 21.4, price: 2182400 },
+                { dn: 560, pn: 'PN8', thickness: 31.7, price: 3175800 },
+                { dn: 560, pn: 'PN10', thickness: 41.2, price: 4075100 },
+                { dn: 560, pn: 'PN12.5', thickness: 50.8, price: 4966700 },
+                { dn: 560, pn: 'PN16', thickness: 50.8, price: 5000000 },
+                { dn: 630, pn: 'PN6', thickness: 24.1, price: 2766800 },
+                { dn: 630, pn: 'PN8', thickness: 35.7, price: 4023100 },
+                { dn: 630, pn: 'PN10', thickness: 46.3, price: 5158900 },
+                { dn: 630, pn: 'PN12.5', thickness: 57.2, price: 6291200 },
+                { dn: 630, pn: 'PN16', thickness: 57.2, price: 6330000 }
+            ],
+            PE80: [
+                { dn: 20, pn: 'PN6', thickness: 1.8, price: 5500 },
+                { dn: 20, pn: 'PN8', thickness: 1.9, price: 5900 },
+                { dn: 20, pn: 'PN10', thickness: 2.0, price: 6500 },
+                { dn: 20, pn: 'PN12.5', thickness: 2.3, price: 7300 },
+                { dn: 20, pn: 'PN16', thickness: 2.8, price: 8600 },
+                { dn: 25, pn: 'PN6', thickness: 1.8, price: 7100 },
+                { dn: 25, pn: 'PN8', thickness: 2.0, price: 7900 },
+                { dn: 25, pn: 'PN10', thickness: 2.3, price: 9000 },
+                { dn: 25, pn: 'PN12.5', thickness: 2.8, price: 10700 },
+                { dn: 25, pn: 'PN16', thickness: 3.5, price: 13000 },
+                { dn: 32, pn: 'PN6', thickness: 2.0, price: 11000 },
+                { dn: 32, pn: 'PN8', thickness: 2.4, price: 13000 },
+                { dn: 32, pn: 'PN10', thickness: 3.0, price: 15900 },
+                { dn: 32, pn: 'PN12.5', thickness: 3.6, price: 18700 },
+                { dn: 32, pn: 'PN16', thickness: 4.4, price: 22300 },
+                { dn: 40, pn: 'PN6', thickness: 2.4, price: 16200 },
+                { dn: 40, pn: 'PN8', thickness: 3.0, price: 19900 },
+                { dn: 40, pn: 'PN10', thickness: 3.7, price: 24200 },
+                { dn: 40, pn: 'PN12.5', thickness: 4.5, price: 28900 },
+                { dn: 40, pn: 'PN16', thickness: 5.5, price: 34600 },
+                { dn: 50, pn: 'PN6', thickness: 3.0, price: 25000 },
+                { dn: 50, pn: 'PN8', thickness: 3.8, price: 31000 },
+                { dn: 50, pn: 'PN10', thickness: 4.6, price: 37100 },
+                { dn: 50, pn: 'PN12.5', thickness: 5.6, price: 44400 },
+                { dn: 50, pn: 'PN16', thickness: 6.9, price: 53500 },
+                { dn: 63, pn: 'PN6', thickness: 3.8, price: 39500 },
+                { dn: 63, pn: 'PN8', thickness: 4.7, price: 48300 },
+                { dn: 63, pn: 'PN10', thickness: 5.8, price: 58800 },
+                { dn: 63, pn: 'PN12.5', thickness: 7.1, price: 70800 },
+                { dn: 63, pn: 'PN16', thickness: 8.6, price: 84600 },
+                { dn: 75, pn: 'PN6', thickness: 4.5, price: 55800 },
+                { dn: 75, pn: 'PN8', thickness: 5.6, price: 68600 },
+                { dn: 75, pn: 'PN10', thickness: 6.8, price: 82500 },
+                { dn: 75, pn: 'PN12.5', thickness: 8.4, price: 100200 },
+                { dn: 75, pn: 'PN16', thickness: 10.3, price: 120500 },
+                { dn: 90, pn: 'PN6', thickness: 5.4, price: 80200 },
+                { dn: 90, pn: 'PN8', thickness: 6.7, price: 98300 },
+                { dn: 90, pn: 'PN10', thickness: 8.2, price: 118900 },
+                { dn: 90, pn: 'PN12.5', thickness: 10.1, price: 144100 },
+                { dn: 90, pn: 'PN16', thickness: 12.3, price: 172900 },
+                { dn: 110, pn: 'PN6', thickness: 6.6, price: 120100 },
+                { dn: 110, pn: 'PN8', thickness: 8.1, price: 146400 },
+                { dn: 110, pn: 'PN10', thickness: 10.0, price: 178000 },
+                { dn: 110, pn: 'PN12.5', thickness: 12.3, price: 215400 },
+                { dn: 110, pn: 'PN16', thickness: 15.1, price: 258800 },
+                { dn: 125, pn: 'PN6', thickness: 7.4, price: 153300 },
+                { dn: 125, pn: 'PN8', thickness: 9.2, price: 188300 },
+                { dn: 125, pn: 'PN10', thickness: 11.4, price: 229700 },
+                { dn: 125, pn: 'PN12.5', thickness: 14.0, price: 277900 },
+                { dn: 125, pn: 'PN16', thickness: 17.1, price: 332600 },
+                { dn: 140, pn: 'PN6', thickness: 8.3, price: 192800 },
+                { dn: 140, pn: 'PN8', thickness: 10.3, price: 236400 },
+                { dn: 140, pn: 'PN10', thickness: 12.7, price: 288300 },
+                { dn: 140, pn: 'PN12.5', thickness: 15.7, price: 348900 },
+                { dn: 140, pn: 'PN16', thickness: 19.2, price: 418400 },
+                { dn: 160, pn: 'PN6', thickness: 9.5, price: 252100 },
+                { dn: 160, pn: 'PN8', thickness: 11.8, price: 308900 },
+                { dn: 160, pn: 'PN10', thickness: 14.6, price: 377300 },
+                { dn: 160, pn: 'PN12.5', thickness: 17.9, price: 455700 },
+                { dn: 160, pn: 'PN16', thickness: 21.9, price: 546800 },
+                { dn: 180, pn: 'PN6', thickness: 10.7, price: 319200 },
+                { dn: 180, pn: 'PN8', thickness: 13.3, price: 391800 },
+                { dn: 180, pn: 'PN10', thickness: 16.4, price: 478600 },
+                { dn: 180, pn: 'PN12.5', thickness: 20.1, price: 577300 },
+                { dn: 180, pn: 'PN16', thickness: 24.6, price: 692800 },
+                { dn: 200, pn: 'PN6', thickness: 11.9, price: 394300 },
+                { dn: 200, pn: 'PN8', thickness: 14.7, price: 482500 },
+                { dn: 200, pn: 'PN10', thickness: 18.2, price: 590900 },
+                { dn: 200, pn: 'PN12.5', thickness: 22.4, price: 713600 },
+                { dn: 200, pn: 'PN16', thickness: 27.4, price: 856900 },
+                { dn: 225, pn: 'PN6', thickness: 13.4, price: 499100 },
+                { dn: 225, pn: 'PN8', thickness: 16.6, price: 611600 },
+                { dn: 225, pn: 'PN10', thickness: 20.5, price: 748800 },
+                { dn: 225, pn: 'PN12.5', thickness: 25.2, price: 903700 },
+                { dn: 225, pn: 'PN16', thickness: 30.8, price: 1084200 },
+                { dn: 250, pn: 'PN6', thickness: 14.8, price: 615000 },
+                { dn: 250, pn: 'PN8', thickness: 18.4, price: 754500 },
+                { dn: 250, pn: 'PN10', thickness: 22.7, price: 921200 },
+                { dn: 250, pn: 'PN12.5', thickness: 27.9, price: 1113000 },
+                { dn: 250, pn: 'PN16', thickness: 34.2, price: 1334800 },
+                { dn: 280, pn: 'PN6', thickness: 16.6, price: 772100 },
+                { dn: 280, pn: 'PN8', thickness: 20.6, price: 946700 },
+                { dn: 280, pn: 'PN10', thickness: 25.4, price: 1156200 },
+                { dn: 280, pn: 'PN12.5', thickness: 31.3, price: 1398800 },
+                { dn: 280, pn: 'PN16', thickness: 38.3, price: 1675200 },
+                { dn: 315, pn: 'PN6', thickness: 18.7, price: 978900 },
+                { dn: 315, pn: 'PN8', thickness: 23.2, price: 1200100 },
+                { dn: 315, pn: 'PN10', thickness: 28.6, price: 1464300 },
+                { dn: 315, pn: 'PN12.5', thickness: 35.2, price: 1771900 },
+                { dn: 315, pn: 'PN16', thickness: 43.1, price: 2121500 },
+                { dn: 355, pn: 'PN6', thickness: 21.1, price: 1243700 },
+                { dn: 355, pn: 'PN8', thickness: 26.1, price: 1523300 },
+                { dn: 355, pn: 'PN10', thickness: 32.2, price: 1859600 },
+                { dn: 355, pn: 'PN12.5', thickness: 39.7, price: 2252500 },
+                { dn: 355, pn: 'PN16', thickness: 48.5, price: 2692200 },
+                { dn: 400, pn: 'PN6', thickness: 23.7, price: 1578300 },
+                { dn: 400, pn: 'PN8', thickness: 29.4, price: 1934700 },
+                { dn: 400, pn: 'PN10', thickness: 36.3, price: 2361900 },
+                { dn: 400, pn: 'PN12.5', thickness: 44.7, price: 2862800 },
+                { dn: 400, pn: 'PN16', thickness: 54.7, price: 3424100 },
+                { dn: 450, pn: 'PN6', thickness: 26.7, price: 2002100 },
+                { dn: 450, pn: 'PN8', thickness: 33.1, price: 2450800 },
+                { dn: 450, pn: 'PN10', thickness: 40.9, price: 2991800 },
+                { dn: 450, pn: 'PN12.5', thickness: 50.3, price: 3628000 },
+                { dn: 450, pn: 'PN16', thickness: 61.5, price: 4338400 },
+                { dn: 500, pn: 'PN6', thickness: 29.7, price: 2470000 },
+                { dn: 500, pn: 'PN8', thickness: 36.8, price: 3025000 },
+                { dn: 500, pn: 'PN10', thickness: 45.4, price: 3693800 },
+                { dn: 500, pn: 'PN12.5', thickness: 55.8, price: 4473800 },
+                { dn: 560, pn: 'PN6', thickness: 33.2, price: 3097200 },
+                { dn: 560, pn: 'PN8', thickness: 41.2, price: 3793600 },
+                { dn: 560, pn: 'PN10', thickness: 50.8, price: 4633200 },
+                { dn: 630, pn: 'PN6', thickness: 37.4, price: 3920100 },
+                { dn: 630, pn: 'PN8', thickness: 46.3, price: 4801800 },
+                { dn: 630, pn: 'PN10', thickness: 57.2, price: 5865500 }
+            ]
+        };
+
+        // Application State Variables
+        let currentDb = JSON.parse(localStorage.getItem('hdpe_db')) || DEFAULT_PRICE_DATA;
+        let selectedItemsList = []; // Calculation cart items
+        let currentLookedUpItem = null;
+
+        // Money Formatter Helper
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(Math.round(amount)).replace('₫', 'đ');
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            filterAvailableDN();
+            renderSummaryTable();
+            renderCalculationTable();
+        });
+
+        // Tab Switcher
+        function switchTab(tabName) {
+            const tabs = ['lookup', 'summary', 'manage'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`tab-${t}-btn`);
+                btn.className = "flex items-center space-x-2 px-3.5 py-2 rounded-lg transition-all duration-200 text-blue-100 hover:text-white hover:bg-white/10";
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}-btn`);
+            activeBtn.className = "flex items-center space-x-2 px-3.5 py-2 rounded-lg transition-all duration-200 bg-white text-brand-800 shadow font-medium";
+
+            if (tabName === 'summary') renderSummaryTable();
+            if (tabName === 'manage') {
+                if (isAuthenticated) {
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('protected-manage-content').classList.remove('hidden');
+                    renderManagementTable();
+                } else {
+                    document.getElementById('auth-screen').classList.remove('hidden');
+                    document.getElementById('protected-manage-content').classList.add('hidden');
+                }
+            }
+        }
+
+        // AUTHENTICATION LOGIC
+        function handleAuthSubmit(event) {
+            event.preventDefault();
+            const inputPwd = document.getElementById('auth-password').value;
+            
+            if (inputPwd === ADMIN_PASSWORD) {
+                isAuthenticated = true;
+                document.getElementById('auth-password').value = '';
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('protected-manage-content').classList.remove('hidden');
+                renderManagementTable();
+                showAlert('Đăng nhập quản trị thành công!', 'success');
+            } else {
+                showAlert('Mật khẩu không chính xác. Vui lòng thử lại!', 'error');
+            }
+        }
+
+        function lockSession() {
+            isAuthenticated = false;
+            document.getElementById('protected-manage-content').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            showAlert('Đã khóa phiên quản trị.', 'info');
+        }
+
+        // Filter Available DN Dropdown based on PE Selection
+        function filterAvailableDN() {
+            const peType = document.querySelector('input[name="pe_type"]:checked').value;
+            const dnSelect = document.getElementById('dn_select');
+            const currentSelectedDN = dnSelect.value || 63;
+
+            const availableDNs = [...new Set(currentDb[peType].map(item => item.dn))].sort((a,b) => a - b);
+            
+            dnSelect.innerHTML = '';
+            availableDNs.forEach(dn => {
+                const opt = document.createElement('option');
+                opt.value = dn;
+                opt.textContent = `DN ${dn} (Phi ${dn}mm)`;
+                if (dn == currentSelectedDN) opt.selected = true;
+                dnSelect.appendChild(opt);
+            });
+
+            if (!dnSelect.value && availableDNs.length > 0) {
+                dnSelect.value = availableDNs.includes(63) ? 63 : availableDNs[0];
+            }
+
+            filterAvailablePN();
+        }
+
+        // Filter Available PN Dropdown based on selected PE and DN
+        function filterAvailablePN() {
+            const peType = document.querySelector('input[name="pe_type"]:checked').value;
+            const dn = parseInt(document.getElementById('dn_select').value);
+            const pnSelect = document.getElementById('pn_select');
+
+            const peList = currentDb[peType] || [];
+            const availablePNs = peList.filter(item => item.dn === dn).map(item => item.pn);
+
+            pnSelect.innerHTML = '';
+            availablePNs.forEach(pn => {
+                const opt = document.createElement('option');
+                opt.value = pn;
+                const matchedItem = peList.find(i => i.dn === dn && i.pn === pn);
+                const thicknessText = matchedItem ? matchedItem.thickness : '';
+                opt.textContent = pn + (thicknessText ? ' (Dày ' + thicknessText + 'mm)' : '');
+                pnSelect.appendChild(opt);
+            });
+
+            triggerLookupCalculation();
+        }
+
+        function handleLookup(event) {
+            if(event) event.preventDefault();
+            triggerLookupCalculation();
+        }
+
+        function triggerLookupCalculation() {
+            const peType = document.querySelector('input[name="pe_type"]:checked').value;
+            const dnSelect = document.getElementById('dn_select');
+            if(!dnSelect.value) return;
+
+            const dn = parseInt(dnSelect.value);
+            const pn = document.getElementById('pn_select').value;
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+
+            const peList = currentDb[peType] || [];
+            const matchedItem = peList.find(item => item.dn === dn && item.pn === pn);
+
+            const badge = document.getElementById('selected-spec-badge');
+            const resultsContainer = document.getElementById('price-results-container');
+
+            if (!matchedItem) {
+                badge.textContent = `Ống HDPE DN${dn} ${pn} ${peType}`;
+                resultsContainer.innerHTML = `
+                    <div class="col-span-3 p-4 bg-amber-50 rounded-xl text-amber-800 text-center font-medium border border-amber-200">
+                        Không tìm thấy quy cách này trong bảng giá hiện tại.
+                    </div>
+                `;
+                currentLookedUpItem = null;
+                return;
+            }
+
+            const priceOriginal = matchedItem.price; // Giá gốc trước thuế
+            const priceAfterDiscount = priceOriginal * (1 - discount / 100); // Giá sau chiết khấu trước thuế
+            const priceWithVat = priceAfterDiscount * 1.08; // Giá sau thuế (VAT 8%)
+
+            currentLookedUpItem = {
+                peType: peType,
+                dn: dn,
+                pn: pn,
+                thickness: matchedItem.thickness,
+                priceOriginal: priceOriginal,
+                priceAfterDiscount: priceAfterDiscount,
+                discount: discount,
+                name: `Ống HDPE DN${dn} ${pn} ${peType}`
+            };
+
+            badge.textContent = `Ống HDPE DN${dn} ${pn} ${peType} (t=${matchedItem.thickness}mm)`;
+
+            resultsContainer.innerHTML = `
+                <!-- 1. Giá gốc trước thuế -->
+                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-1">
+                    <div class="text-xs text-slate-500 font-medium">Đơn giá niêm yết (Gốc)</div>
+                    <div class="text-base sm:text-lg font-bold text-slate-800">${formatMoney(priceOriginal)}</div>
+                    <div class="text-[11px] text-slate-400">Chưa CK, chưa VAT / mét</div>
+                </div>
+
+                <!-- 2. Giá sau chiết khấu -->
+                <div class="bg-brand-50 border border-brand-200 p-4 rounded-xl space-y-1">
+                    <div class="text-xs text-brand-700 font-medium">Đơn giá sau CK (${discount}%)</div>
+                    <div class="text-base sm:text-lg font-extrabold text-brand-800">${formatMoney(priceAfterDiscount)}</div>
+                    <div class="text-[11px] text-brand-600/80">Chưa bao gồm thuế VAT / mét</div>
+                </div>
+
+                <!-- 3. Giá sau thuế (VAT 8%) -->
+                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl space-y-1">
+                    <div class="text-xs text-emerald-700 font-medium">Giá thanh toán (+VAT 8%)</div>
+                    <div class="text-base sm:text-lg font-extrabold text-emerald-700">${formatMoney(priceWithVat)}</div>
+                    <div class="text-[11px] text-emerald-600/80">Đã gồm VAT & Chiết khấu / mét</div>
+                </div>
+            `;
+        }
+
+        function addCurrentItemToTable() {
+            if (!currentLookedUpItem) {
+                showAlert('Vui lòng chọn quy cách hợp lệ trước khi thêm!', 'error');
+                return;
+            }
+
+            const existingIndex = selectedItemsList.findIndex(i => 
+                i.peType === currentLookedUpItem.peType && 
+                i.dn === currentLookedUpItem.dn && 
+                i.pn === currentLookedUpItem.pn
+            );
+
+            if (existingIndex > -1) {
+                selectedItemsList[existingIndex].qty += 100;
+            } else {
+                selectedItemsList.push({ ...currentLookedUpItem, qty: 100 });
+            }
+
+            renderCalculationTable();
+            showAlert(`Đã thêm ${currentLookedUpItem.name} vào bảng báo giá!`, 'success');
+        }
+
+        function renderCalculationTable() {
+            const tbody = document.getElementById('calculation-tbody');
+            const mobileCardsContainer = document.getElementById('calculation-mobile-cards');
+            tbody.innerHTML = '';
+            mobileCardsContainer.innerHTML = '';
+
+            if (selectedItemsList.length === 0) {
+                selectedItemsList = [
+                    {
+                        peType: 'PE100',
+                        dn: 63,
+                        pn: 'PN10',
+                        thickness: 4.7,
+                        priceOriginal: 51800,
+                        priceAfterDiscount: 32116,
+                        discount: 38,
+                        name: 'Ống HDPE DN63 PN10 PE100',
+                        qty: 100
+                    },
+                    {
+                        peType: 'PE100',
+                        dn: 63,
+                        pn: 'PN6',
+                        thickness: 2.5,
+                        priceOriginal: 28900,
+                        priceAfterDiscount: 17918,
+                        discount: 38,
+                        name: 'Ống HDPE DN63 PN6 PE100',
+                        qty: 100
+                    }
+                ];
+            }
+
+            let totalBeforeTax = 0;
+
+            selectedItemsList.forEach((item, idx) => {
+                const lineTotalBeforeTax = item.priceAfterDiscount * item.qty;
+                totalBeforeTax += lineTotalBeforeTax;
+
+                // 1. Desktop Table Row
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100 text-xs sm:text-sm";
+                tr.innerHTML = `
+                    <td class="px-3 py-3 font-semibold text-slate-600">${idx + 1}</td>
+                    <td class="px-3 py-3 font-bold text-slate-800">${item.name}</td>
+                    <td class="px-3 py-3 text-right font-medium text-slate-700">${formatMoney(item.priceOriginal)}</td>
+                    <td class="px-3 py-3 text-center font-bold text-slate-700">${item.discount}%</td>
+                    <td class="px-3 py-3 text-right font-bold text-brand-700">${formatMoney(item.priceAfterDiscount)}</td>
+                    <td class="px-3 py-3 text-center">
+                        <input type="number" min="1" step="1" value="${item.qty}" 
+                            onchange="updateCartQuantity(${idx}, this.value)" 
+                            class="w-20 p-1.5 border border-slate-300 rounded-lg text-center font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 text-xs sm:text-sm">
+                    </td>
+                    <td class="px-3 py-3 text-right font-bold text-slate-900">${formatMoney(lineTotalBeforeTax)}</td>
+                    <td class="px-3 py-3 text-center">
+                        <button onclick="removeCartItem(${idx})" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+
+                // 2. Mobile Card Element (Better usability on phones)
+                const card = document.createElement('div');
+                card.className = "p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5 relative";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start pr-6">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full">STT #${idx + 1}</span>
+                            <h4 class="font-bold text-slate-800 text-sm mt-1">${item.name}</h4>
+                        </div>
+                        <button onclick="removeCartItem(${idx})" class="absolute top-3 right-3 p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg">
+                            <i class="fa-solid fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs border-y border-slate-200/80 py-2">
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Đơn giá niêm yết:</span>
+                            <span class="font-semibold text-slate-700">${formatMoney(item.priceOriginal)}</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[10px]">Đơn giá sau CK (${item.discount}%):</span>
+                            <span class="font-bold text-brand-700">${formatMoney(item.priceAfterDiscount)}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-0.5">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-xs font-semibold text-slate-600">Số lượng (m):</span>
+                            <input type="number" min="1" step="1" value="${item.qty}" 
+                                onchange="updateCartQuantity(${idx}, this.value)" 
+                                class="w-20 p-1 border border-slate-300 rounded-lg text-center font-bold text-slate-800 text-xs bg-white focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-slate-400 block">Thành tiền:</span>
+                            <span class="font-extrabold text-slate-900 text-sm">${formatMoney(lineTotalBeforeTax)}</span>
+                        </div>
+                    </div>
+                `;
+                mobileCardsContainer.appendChild(card);
+            });
+
+            const vatAmount = totalBeforeTax * 0.08;
+            const grandTotal = totalBeforeTax + vatAmount;
+
+            updateCalculationTotals(totalBeforeTax, vatAmount, grandTotal);
+        }
+
+        function updateCartQuantity(index, val) {
+            const num = parseFloat(val);
+            if (isNaN(num) || num <= 0) return;
+            selectedItemsList[index].qty = num;
+            renderCalculationTable();
+        }
+
+        function removeCartItem(index) {
+            selectedItemsList.splice(index, 1);
+            renderCalculationTable();
+        }
+
+        function updateCalculationTotals(beforeTax, vat, grand) {
+            document.getElementById('total-before-tax').textContent = formatMoney(beforeTax);
+            document.getElementById('total-vat').textContent = formatMoney(vat);
+            document.getElementById('grand-total').textContent = formatMoney(grand);
+        }
+
+        // SUMMARY TABLE LOGIC
+        function renderSummaryTable() {
+            const peFilter = document.getElementById('summary-pe-filter').value;
+            const pnFilter = document.getElementById('summary-pn-filter').value;
+            const tbody = document.getElementById('summary-tbody');
+            tbody.innerHTML = '';
+
+            let combinedList = [];
+
+            if (peFilter === 'ALL' || peFilter === 'PE100') {
+                (currentDb.PE100 || []).forEach(item => combinedList.push({ ...item, peType: 'PE100' }));
+            }
+            if (peFilter === 'ALL' || peFilter === 'PE80') {
+                (currentDb.PE80 || []).forEach(item => combinedList.push({ ...item, peType: 'PE80' }));
+            }
+
+            if (pnFilter !== 'ALL') {
+                combinedList = combinedList.filter(item => item.pn === pnFilter);
+            }
+
+            combinedList.sort((a, b) => a.dn - b.dn || a.peType.localeCompare(b.peType));
+
+            if (combinedList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Không tìm thấy dữ liệu khớp với bộ lọc.</td></tr>`;
+                return;
+            }
+
+            combinedList.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                const priceVat = item.price * 1.08;
+
+                tr.innerHTML = `
+                    <td class="px-4 py-2.5 font-bold ${item.peType === 'PE100' ? 'text-brand-600' : 'text-amber-600'}">${item.peType}</td>
+                    <td class="px-4 py-2.5 font-bold text-slate-800">DN ${item.dn}</td>
+                    <td class="px-4 py-2.5"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded border border-slate-200">${item.pn}</span></td>
+                    <td class="px-4 py-2.5 text-center font-medium">${item.thickness} mm</td>
+                    <td class="px-4 py-2.5 text-right font-medium text-slate-800">${formatMoney(item.price)}</td>
+                    <td class="px-4 py-2.5 text-right font-bold text-emerald-600">${formatMoney(priceVat)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // MANAGEMENT TABLE LOGIC
+        function renderManagementTable() {
+            const selectedPe = document.getElementById('manage-pe-filter').value;
+            const tbody = document.getElementById('management-tbody');
+            tbody.innerHTML = '';
+
+            const list = currentDb[selectedPe] || [];
+
+            list.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-slate-800">DN ${item.dn}</td>
+                    <td class="px-4 py-3"><span class="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded">${item.pn}</span></td>
+                    <td class="px-4 py-3">
+                        <input type="number" step="0.1" value="${item.thickness}" 
+                            onchange="updateItemValue('${selectedPe}', ${index}, 'thickness', this.value)" 
+                            class="w-24 p-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-brand-500">
+                        <span class="text-xs text-slate-400">mm</span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <input type="number" step="100" value="${item.price}" 
+                            onchange="updateItemValue('${selectedPe}', ${index}, 'price', this.value)" 
+                            class="w-36 p-1.5 border border-slate-200 rounded-lg text-sm bg-white font-medium focus:ring-2 focus:ring-brand-500">
+                        <span class="text-xs text-slate-400">VNĐ</span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="deleteItem('${selectedPe}', ${index})" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all" title="Xóa dòng này">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateItemValue(peType, index, field, value) {
+            const numVal = parseFloat(value);
+            if (isNaN(numVal) || numVal < 0) return;
+
+            currentDb[peType][index][field] = numVal;
+            saveDbToLocalStorage();
+            showAlert('Đã cập nhật dữ liệu thành công!', 'success');
+        }
+
+        function deleteItem(peType, index) {
+            if (confirm("Bạn có chắc chắn muốn xóa mục này khỏi bảng giá?")) {
+                currentDb[peType].splice(index, 1);
+                saveDbToLocalStorage();
+                renderManagementTable();
+                filterAvailableDN();
+                showAlert('Đã xóa dòng được chọn.', 'info');
+            }
+        }
+
+        function saveDbToLocalStorage() {
+            localStorage.setItem('hdpe_db', JSON.stringify(currentDb));
+        }
+
+        function resetToDefaultData() {
+            if (confirm("Bạn có muốn khôi phục toàn bộ bảng giá về dữ liệu gốc ban đầu không?")) {
+                currentDb = JSON.parse(JSON.stringify(DEFAULT_PRICE_DATA));
+                saveDbToLocalStorage();
+                renderManagementTable();
+                filterAvailableDN();
+                showAlert('Đã khôi phục cơ sở dữ liệu về mặc định.', 'success');
+            }
+        }
+
+        // HANDLE EXCEL UPLOAD
+        function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    let updated = false;
+
+                    if (workbook.SheetNames.includes('HDPE PE100') || workbook.SheetNames.includes('PE100')) {
+                        const sheetName = workbook.SheetNames.find(s => s.includes('PE100'));
+                        const parsedData = parseExcelSheet(workbook.Sheets[sheetName]);
+                        if (parsedData.length > 0) {
+                            currentDb.PE100 = parsedData;
+                            updated = true;
+                        }
+                    }
+
+                    if (workbook.SheetNames.includes('HDPE PE80') || workbook.SheetNames.includes('PE80')) {
+                        const sheetName = workbook.SheetNames.find(s => s.includes('PE80'));
+                        const parsedData = parseExcelSheet(workbook.Sheets[sheetName]);
+                        if (parsedData.length > 0) {
+                            currentDb.PE80 = parsedData;
+                            updated = true;
+                        }
+                    }
+
+                    if (updated) {
+                        saveDbToLocalStorage();
+                        renderManagementTable();
+                        filterAvailableDN();
+                        showAlert('Cập nhật bảng giá từ Excel thành công!', 'success');
+                    } else {
+                        showAlert('Không tìm thấy Sheet "HDPE PE100" hoặc "HDPE PE80" phù hợp trong file Excel!', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showAlert('Lỗi đọc file Excel. Vui lòng kiểm tra định dạng tệp!', 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseExcelSheet(sheet) {
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const resultList = [];
+            let dnColIndex = -1;
+            let headerRowIndex = -1;
+
+            for (let i = 0; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (!row) continue;
+                for (let j = 0; j < row.length; j++) {
+                    const val = String(row[j] || '').toUpperCase();
+                    if (val.includes('DN') || val.includes('ĐƯỜNG KÍNH')) {
+                        dnColIndex = j;
+                        headerRowIndex = i;
+                        break;
+                    }
+                }
+                if (dnColIndex !== -1) break;
+            }
+
+            if (dnColIndex === -1) dnColIndex = 1;
+
+            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (!row || !row[dnColIndex]) continue;
+
+                const dnVal = parseInt(String(row[dnColIndex]).replace(/\D/g, ''));
+                if (isNaN(dnVal) || dnVal < 10) continue;
+
+                const pnList = ['PN6', 'PN8', 'PN10', 'PN12.5', 'PN16'];
+                pnList.forEach(pn => {
+                    for (let c = dnColIndex + 1; c < row.length - 1; c += 2) {
+                        const thickness = parseFloat(row[c]);
+                        const price = parseFloat(row[c+1]);
+
+                        if (!isNaN(thickness) && !isNaN(price) && price > 100) {
+                            resultList.push({ dn: dnVal, pn: pn, thickness: thickness, price: price });
+                            break; 
+                        }
+                    }
+                });
+            }
+            return resultList;
+        }
+
+        // ALERT NOTIFICATION SYSTEM
+        function showAlert(message, type = 'info') {
+            const alertBox = document.getElementById('alert-container');
+            const bgClass = type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                           type === 'error' ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                           'bg-blue-50 text-blue-800 border-blue-200';
+            
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' :
+                         type === 'error' ? 'fa-triangle-exclamation text-rose-500' : 'fa-circle-info text-blue-500';
+
+            alertBox.className = `p-4 rounded-xl border text-sm font-medium flex items-center space-x-3 shadow-sm ${bgClass}`;
+            alertBox.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span>${message}</span>`;
+            alertBox.classList.remove('hidden');
+
+            setTimeout(() => alertBox.classList.add('hidden'), 4000);
+        }
+    </script>
+</body>
+</html>
