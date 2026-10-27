@@ -114,7 +114,7 @@
                         <div>
                             <label for="dn_select" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Đường kính ngoài danh định (DN - mm)</label>
                             <select id="dn_select" onchange="filterAvailablePN()" class="w-full p-2.5 sm:p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-xs sm:text-sm font-medium transition-all">
-                                <!-- Dynamic Options -->
+                                <option value="">-- Chọn đường kính DN --</option>
                             </select>
                         </div>
 
@@ -122,7 +122,7 @@
                         <div>
                             <label for="pn_select" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Cấp áp lực (PN - bar)</label>
                             <select id="pn_select" onchange="triggerLookupCalculation()" class="w-full p-2.5 sm:p-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-800 text-xs sm:text-sm font-medium transition-all">
-                                <!-- Dynamic PN Options -->
+                                <option value="">-- Chọn áp lực PN --</option>
                             </select>
                         </div>
 
@@ -315,10 +315,16 @@
                                     <i class="fa-solid fa-shield-halved mr-1"></i>Đã Đăng Nhập
                                 </span>
                             </div>
-                            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Tải tệp Excel lên hoặc trực tiếp chỉnh sửa bảng giá trong trình duyệt</p>
+                            <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">Bạn có thể tải file Excel mẫu về nhập liệu hoặc chỉnh sửa trực tiếp bên dưới</p>
                         </div>
 
                         <div class="flex flex-wrap items-center gap-2">
+                            <!-- Nút Tải File Mẫu Excel -->
+                            <button onclick="downloadExcelTemplate()" class="flex-1 sm:flex-none justify-center px-3 sm:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium text-xs sm:text-sm transition-all border border-slate-300 flex items-center space-x-1.5" title="Tải File Excel Mẫu Chuẩn">
+                                <i class="fa-solid fa-file-arrow-down text-brand-600"></i>
+                                <span>Tải File Excel Mẫu</span>
+                            </button>
+
                             <label class="cursor-pointer flex-1 sm:flex-none justify-center px-3 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs sm:text-sm transition-all shadow-sm flex items-center space-x-1.5">
                                 <i class="fa-solid fa-file-excel"></i>
                                 <span>Upload Excel (.xlsx)</span>
@@ -326,7 +332,7 @@
                             </label>
                             <button onclick="resetToDefaultData()" class="px-3 sm:px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-medium text-xs sm:text-sm transition-all shadow-sm flex items-center space-x-1.5">
                                 <i class="fa-solid fa-rotate-left"></i>
-                                <span>Khôi phục giá</span>
+                                <span>Khôi phục gốc</span>
                             </button>
                             <button onclick="lockSession()" class="px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium text-xs sm:text-sm transition-all shadow-sm flex items-center space-x-1" title="Khóa phiên làm việc">
                                 <i class="fa-solid fa-right-from-bracket"></i>
@@ -346,7 +352,7 @@
                         </div>
                         <div class="text-[11px] sm:text-xs text-slate-500">
                             <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>
-                            Chỉnh sửa trực tiếp tại các ô độ dày hoặc đơn giá bên dưới.
+                            Mẫu Excel gồm 2 Sheet (PE100 & PE80) với các cột: <b>DN | PN | DoDay | DonGia</b>
                         </div>
                     </div>
                 </div>
@@ -629,6 +635,79 @@
             ]
         };
 
+        // EXCEL TEMPLATE GENERATION & DOWNLOAD
+        function downloadExcelTemplate() {
+            const wb = XLSX.utils.book_new();
+
+            const prepareSheetData = (items) => {
+                const header = [["DN (mm)", "Cấp PN", "Độ dày (mm)", "Đơn giá chưa VAT (VNĐ/m)"]];
+                const rows = items.map(i => [i.dn, i.pn, i.thickness, i.price]);
+                return XLSX.utils.aoa_to_sheet(header.concat(rows));
+            };
+
+            const wsPE100 = prepareSheetData(currentDb.PE100 || DEFAULT_PRICE_DATA.PE100);
+            const wsPE80 = prepareSheetData(currentDb.PE80 || DEFAULT_PRICE_DATA.PE80);
+
+            XLSX.utils.book_append_sheet(wb, wsPE100, "HDPE PE100");
+            XLSX.utils.book_append_sheet(wb, wsPE80, "HDPE PE80");
+
+            XLSX.writeFile(wb, "Mau_Bang_Gia_Ong_HDPE_BADAPLAST.xlsx");
+            showAlert('Đã tải xuống tệp Excel mẫu thành công!', 'success');
+        }
+
+        // IMPROVED EXCEL PARSER SYSTEM
+        function parseExcelSheet(sheet) {
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const resultList = [];
+            if (!jsonData || jsonData.length < 2) return resultList;
+
+            let dnIdx = -1, pnIdx = -1, thickIdx = -1, priceIdx = -1;
+            let headerRowIndex = -1;
+
+            // Find header row dynamically
+            for (let i = 0; i < Math.min(15, jsonData.length); i++) {
+                const row = jsonData[i];
+                if (!row) continue;
+                for (let j = 0; j < row.length; j++) {
+                    const str = String(row[j] || '').toUpperCase().trim();
+                    if (str.includes('DN') || str.includes('ĐƯỜNG KÍNH')) dnIdx = j;
+                    else if (str.includes('PN') || str.includes('ÁP LỰC')) pnIdx = j;
+                    else if (str.includes('DÀY') || str.includes('DODAY') || str.includes('THICKNESS')) thickIdx = j;
+                    else if (str.includes('GIÁ') || str.includes('GIA') || str.includes('PRICE') || str.includes('DONGIA')) priceIdx = j;
+                }
+                if (dnIdx !== -1 && (pnIdx !== -1 || priceIdx !== -1)) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+
+            // Fallback column index if header detection was partial
+            if (dnIdx === -1) dnIdx = 0;
+            if (pnIdx === -1) pnIdx = 1;
+            if (thickIdx === -1) thickIdx = 2;
+            if (priceIdx === -1) priceIdx = 3;
+
+            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+                const row = jsonData[i];
+                if (!row || row[dnIdx] === undefined) continue;
+
+                const rawDN = String(row[dnIdx]).replace(/\D/g, '');
+                const dn = parseInt(rawDN);
+                if (isNaN(dn) || dn < 10) continue;
+
+                let pn = String(row[pnIdx] || 'PN10').toUpperCase().trim();
+                if (!pn.startsWith('PN')) pn = 'PN' + pn;
+
+                const thickness = parseFloat(String(row[thickIdx]).replace(',', '.')) || 0;
+                const price = parseFloat(String(row[priceIdx]).replace(/\D/g, '')) || 0;
+
+                if (dn > 0 && price > 0) {
+                    resultList.push({ dn, pn, thickness, price });
+                }
+            }
+            return resultList;
+        }
+
         // Application State Variables
         let currentDb = JSON.parse(localStorage.getItem('hdpe_db')) || DEFAULT_PRICE_DATA;
         let selectedItemsList = []; // Calculation cart items
@@ -642,6 +721,7 @@
         // Initialize App
         document.addEventListener('DOMContentLoaded', () => {
             filterAvailableDN();
+            resetLookupResult();
             renderSummaryTable();
             renderCalculationTable();
         });
@@ -700,22 +780,16 @@
         function filterAvailableDN() {
             const peType = document.querySelector('input[name="pe_type"]:checked').value;
             const dnSelect = document.getElementById('dn_select');
-            const currentSelectedDN = dnSelect.value || 63;
 
-            const availableDNs = [...new Set(currentDb[peType].map(item => item.dn))].sort((a,b) => a - b);
+            const availableDNs = [...new Set((currentDb[peType] || []).map(item => item.dn))].sort((a,b) => a - b);
             
-            dnSelect.innerHTML = '';
+            dnSelect.innerHTML = '<option value="">-- Chọn đường kính DN --</option>';
             availableDNs.forEach(dn => {
                 const opt = document.createElement('option');
                 opt.value = dn;
                 opt.textContent = `DN ${dn} (Phi ${dn}mm)`;
-                if (dn == currentSelectedDN) opt.selected = true;
                 dnSelect.appendChild(opt);
             });
-
-            if (!dnSelect.value && availableDNs.length > 0) {
-                dnSelect.value = availableDNs.includes(63) ? 63 : availableDNs[0];
-            }
 
             filterAvailablePN();
         }
@@ -723,13 +797,20 @@
         // Filter Available PN Dropdown based on selected PE and DN
         function filterAvailablePN() {
             const peType = document.querySelector('input[name="pe_type"]:checked').value;
-            const dn = parseInt(document.getElementById('dn_select').value);
+            const dnVal = document.getElementById('dn_select').value;
             const pnSelect = document.getElementById('pn_select');
 
+            pnSelect.innerHTML = '<option value="">-- Chọn áp lực PN --</option>';
+
+            if (!dnVal) {
+                resetLookupResult();
+                return;
+            }
+
+            const dn = parseInt(dnVal);
             const peList = currentDb[peType] || [];
             const availablePNs = peList.filter(item => item.dn === dn).map(item => item.pn);
 
-            pnSelect.innerHTML = '';
             availablePNs.forEach(pn => {
                 const opt = document.createElement('option');
                 opt.value = pn;
@@ -742,6 +823,16 @@
             triggerLookupCalculation();
         }
 
+        function resetLookupResult() {
+            currentLookedUpItem = null;
+            document.getElementById('selected-spec-badge').textContent = 'Chưa chọn quy cách';
+            document.getElementById('price-results-container').innerHTML = `
+                <div class="col-span-3 p-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 font-medium text-xs sm:text-sm">
+                    <i class="fa-solid fa-arrow-left mr-2 hidden sm:inline"></i>Vui lòng chọn thông số DN và PN để xem đơn giá sản phẩm.
+                </div>
+            `;
+        }
+
         function handleLookup(event) {
             if(event) event.preventDefault();
             triggerLookupCalculation();
@@ -749,11 +840,16 @@
 
         function triggerLookupCalculation() {
             const peType = document.querySelector('input[name="pe_type"]:checked').value;
-            const dnSelect = document.getElementById('dn_select');
-            if(!dnSelect.value) return;
+            const dnVal = document.getElementById('dn_select').value;
+            const pnVal = document.getElementById('pn_select').value;
 
-            const dn = parseInt(dnSelect.value);
-            const pn = document.getElementById('pn_select').value;
+            if (!dnVal || !pnVal) {
+                resetLookupResult();
+                return;
+            }
+
+            const dn = parseInt(dnVal);
+            const pn = pnVal;
             const discount = parseFloat(document.getElementById('discount').value) || 0;
 
             const peList = currentDb[peType] || [];
@@ -765,7 +861,7 @@
             if (!matchedItem) {
                 badge.textContent = `Ống HDPE DN${dn} ${pn} ${peType}`;
                 resultsContainer.innerHTML = `
-                    <div class="col-span-3 p-4 bg-amber-50 rounded-xl text-amber-800 text-center font-medium border border-amber-200">
+                    <div class="col-span-3 p-4 bg-amber-50 rounded-xl text-amber-800 text-center font-medium border border-amber-200 text-xs sm:text-sm">
                         Không tìm thấy quy cách này trong bảng giá hiện tại.
                     </div>
                 `;
@@ -842,34 +938,26 @@
             tbody.innerHTML = '';
             mobileCardsContainer.innerHTML = '';
 
-            if (selectedItemsList.length === 0) {
-                selectedItemsList = [
-                    {
-                        peType: 'PE100',
-                        dn: 63,
-                        pn: 'PN10',
-                        thickness: 4.7,
-                        priceOriginal: 51800,
-                        priceAfterDiscount: 32116,
-                        discount: 38,
-                        name: 'Ống HDPE DN63 PN10 PE100',
-                        qty: 100
-                    },
-                    {
-                        peType: 'PE100',
-                        dn: 63,
-                        pn: 'PN6',
-                        thickness: 2.5,
-                        priceOriginal: 28900,
-                        priceAfterDiscount: 17918,
-                        discount: 38,
-                        name: 'Ống HDPE DN63 PN6 PE100',
-                        qty: 100
-                    }
-                ];
-            }
-
             let totalBeforeTax = 0;
+
+            if (selectedItemsList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-8 text-center text-slate-400 font-medium">
+                            <i class="fa-solid fa-basket-shopping text-2xl mb-2 block"></i>
+                            Bảng báo giá hiện đang trống. Hãy chọn thông số bên trái và bấm "Thêm Quy Cách Này Vào Bảng Tính".
+                        </td>
+                    </tr>
+                `;
+                mobileCardsContainer.innerHTML = `
+                    <div class="p-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center text-slate-400 font-medium text-xs">
+                        <i class="fa-solid fa-basket-shopping text-2xl mb-2 block"></i>
+                        Bảng báo giá hiện đang trống.
+                    </div>
+                `;
+                updateCalculationTotals(0, 0, 0);
+                return;
+            }
 
             selectedItemsList.forEach((item, idx) => {
                 const lineTotalBeforeTax = item.priceAfterDiscount * item.qty;
@@ -1086,33 +1174,30 @@
                 try {
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, { type: 'array' });
-                    let updated = false;
+                    let updatedCount = 0;
 
-                    if (workbook.SheetNames.includes('HDPE PE100') || workbook.SheetNames.includes('PE100')) {
-                        const sheetName = workbook.SheetNames.find(s => s.includes('PE100'));
-                        const parsedData = parseExcelSheet(workbook.Sheets[sheetName]);
-                        if (parsedData.length > 0) {
-                            currentDb.PE100 = parsedData;
-                            updated = true;
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sNameUpper = sheetName.toUpperCase();
+                        let targetKey = null;
+                        if (sNameUpper.includes('PE100')) targetKey = 'PE100';
+                        else if (sNameUpper.includes('PE80')) targetKey = 'PE80';
+
+                        if (targetKey) {
+                            const parsedData = parseExcelSheet(workbook.Sheets[sheetName]);
+                            if (parsedData.length > 0) {
+                                currentDb[targetKey] = parsedData;
+                                updatedCount += parsedData.length;
+                            }
                         }
-                    }
+                    });
 
-                    if (workbook.SheetNames.includes('HDPE PE80') || workbook.SheetNames.includes('PE80')) {
-                        const sheetName = workbook.SheetNames.find(s => s.includes('PE80'));
-                        const parsedData = parseExcelSheet(workbook.Sheets[sheetName]);
-                        if (parsedData.length > 0) {
-                            currentDb.PE80 = parsedData;
-                            updated = true;
-                        }
-                    }
-
-                    if (updated) {
+                    if (updatedCount > 0) {
                         saveDbToLocalStorage();
                         renderManagementTable();
                         filterAvailableDN();
-                        showAlert('Cập nhật bảng giá từ Excel thành công!', 'success');
+                        showAlert(`Đã cập nhật thành công ${updatedCount} dòng dữ liệu từ Excel!`, 'success');
                     } else {
-                        showAlert('Không tìm thấy Sheet "HDPE PE100" hoặc "HDPE PE80" phù hợp trong file Excel!', 'error');
+                        showAlert('Không đọc được dữ liệu phù hợp! Hãy tải File Mẫu Excel về sử dụng.', 'error');
                     }
                 } catch (err) {
                     console.error(err);
@@ -1120,51 +1205,6 @@
                 }
             };
             reader.readAsArrayBuffer(file);
-        }
-
-        function parseExcelSheet(sheet) {
-            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-            const resultList = [];
-            let dnColIndex = -1;
-            let headerRowIndex = -1;
-
-            for (let i = 0; i < jsonData.length; i++) {
-                const row = jsonData[i];
-                if (!row) continue;
-                for (let j = 0; j < row.length; j++) {
-                    const val = String(row[j] || '').toUpperCase();
-                    if (val.includes('DN') || val.includes('ĐƯỜNG KÍNH')) {
-                        dnColIndex = j;
-                        headerRowIndex = i;
-                        break;
-                    }
-                }
-                if (dnColIndex !== -1) break;
-            }
-
-            if (dnColIndex === -1) dnColIndex = 1;
-
-            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
-                const row = jsonData[i];
-                if (!row || !row[dnColIndex]) continue;
-
-                const dnVal = parseInt(String(row[dnColIndex]).replace(/\D/g, ''));
-                if (isNaN(dnVal) || dnVal < 10) continue;
-
-                const pnList = ['PN6', 'PN8', 'PN10', 'PN12.5', 'PN16'];
-                pnList.forEach(pn => {
-                    for (let c = dnColIndex + 1; c < row.length - 1; c += 2) {
-                        const thickness = parseFloat(row[c]);
-                        const price = parseFloat(row[c+1]);
-
-                        if (!isNaN(thickness) && !isNaN(price) && price > 100) {
-                            resultList.push({ dn: dnVal, pn: pn, thickness: thickness, price: price });
-                            break; 
-                        }
-                    }
-                });
-            }
-            return resultList;
         }
 
         // ALERT NOTIFICATION SYSTEM
